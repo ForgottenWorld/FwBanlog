@@ -3,5 +3,5 @@ version: ${project.version}
 main: me.kaotich00.fwbanlog.FwBanlog
 api-version: 1.16
 authors: [ Kaotich00 ]
-description: Banlog plugin for ForgottenWorld Paper MC
+description: Banlog plugin for ForgottenWorlgitd Paper MC
 website: https://forgottenworld.it

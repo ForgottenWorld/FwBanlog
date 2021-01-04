@@ -53,7 +53,7 @@ public class HikariConnectionFactory implements ConnectionFactory {
             e.printStackTrace();
         }
 
-        config.setPoolName("fwauctionhouse-hikari");
+        config.setPoolName("fwbanlog-hikari");
         addConnectionInfo(config);
         config.setInitializationFailTimeout(-1);
 
