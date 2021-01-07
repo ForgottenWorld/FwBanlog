@@ -1,5 +1,6 @@
 package me.kaotich00.fwbanlog;
 
+import me.kaotich00.fwbanlog.listener.PlayerListener;
 import me.kaotich00.fwbanlog.storage.Storage;
 import me.kaotich00.fwbanlog.storage.StorageFactory;
 import net.md_5.bungee.api.ChatColor;
@@ -23,6 +24,9 @@ public final class FwBanlog extends JavaPlugin {
 
         sender.sendMessage(ChatColor.GRAY + "   >> " + ChatColor.RESET + " Initializing database...");
         initStorage();
+
+        sender.sendMessage(ChatColor.GRAY + "   >> " + ChatColor.RESET + " Registering listeners...");
+        registerListeners();
 
         sender.sendMessage(ChatColor.DARK_GRAY + "" + ChatColor.STRIKETHROUGH +  "====================================================");
     }
@@ -55,5 +59,9 @@ public final class FwBanlog extends JavaPlugin {
     public void shutdownStorage() {
         Storage storage = StorageFactory.getInstance();
         storage.shutdown();
+    }
+
+    public void registerListeners() {
+        getServer().getPluginManager().registerEvents(new PlayerListener(), this);
     }
 }

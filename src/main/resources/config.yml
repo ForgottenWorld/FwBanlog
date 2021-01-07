@@ -31,3 +31,7 @@ database: 'database'
 # Admin Credentials for the database.
 username: 'username'
 password: 'password'
+
+# Define the server id used for this server.
+# Default: 1
+serverId: 1
