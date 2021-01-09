@@ -18,6 +18,7 @@ public class SqlStorage implements StorageMethod {
     private static final String INSERT_BAN = "INSERT INTO ban(`id_player_id`,`id_server_id`,`id_operator_id`,`start_date`,`is_perma`,`reason`,`description`,`image_password`,`created`,`end_date`,`is_applied`) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
     private static final String INSERT_PLAYER = "INSERT INTO player(`uuid`,`name`,`reputation`,`created`) VALUES (?,?,?,?)";
     private static final String SELECT_PLAYER = "SELECT * FROM player WHERE uuid = ?";
+    private static final String SELECT_BAN = "SELECT * FROM ban WHERE start_date = ? AND id_player_id = ? AND id_server_id = ? AND id_operator_id = ?";
 
     private ConnectionFactory connectionFactory;
     private final FwBanlog plugin;
@@ -139,6 +140,36 @@ public class SqlStorage implements StorageMethod {
         }
 
         return playerIdFuture;
+    }
+
+    @Override
+    public CompletableFuture<Boolean> doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator) {
+        CompletableFuture<Boolean> doesBanExistFuture = new CompletableFuture<>();
+
+        try (Connection c = getConnection()) {
+            try (PreparedStatement ps = c.prepareStatement(SELECT_BAN)) {
+                ps.setDate(1, new java.sql.Date(banEntry.getCreated().getTime()));
+                ps.setInt(2, idPlayer);
+                ps.setInt(3, idServer);
+                ps.setInt(4, idOperator);
+                try (ResultSet rs = ps.executeQuery()) {
+                    int count = 0;
+                    while (rs.next()) {
+                        doesBanExistFuture.complete(true);
+                        count++;
+                    }
+
+                    if(count == 0) {
+                        doesBanExistFuture.complete(false);
+                    }
+                }
+                return doesBanExistFuture;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return doesBanExistFuture;
     }
 
 }

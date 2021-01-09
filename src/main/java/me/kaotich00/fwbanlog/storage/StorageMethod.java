@@ -23,4 +23,6 @@ public interface StorageMethod {
 
     CompletableFuture<Integer> getPlayerId(String uuid);
 
+    CompletableFuture<Boolean> doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
+
 }
