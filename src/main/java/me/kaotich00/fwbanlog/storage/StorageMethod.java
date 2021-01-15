@@ -17,12 +17,12 @@ public interface StorageMethod {
 
     Connection getConnection() throws SQLException;
 
-    CompletableFuture<Void> insertNewBan(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
+    void insertNewBan(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
 
-    CompletableFuture<Void> deleteBan();
+    void deleteBan();
 
-    CompletableFuture<Integer> getPlayerId(String uuid);
+    Integer getPlayerId(String uuid);
 
-    CompletableFuture<Boolean> doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
+    Boolean doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
 
 }

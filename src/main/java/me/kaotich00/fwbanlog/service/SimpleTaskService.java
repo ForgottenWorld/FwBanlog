@@ -12,7 +12,6 @@ public class SimpleTaskService {
         if (taskService != null){
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
         }
-        this.banTaskId = BanScheduler.scheduleBanListener();
     }
 
     public static SimpleTaskService getInstance() {

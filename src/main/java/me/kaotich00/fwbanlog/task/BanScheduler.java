@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class BanScheduler {
 
@@ -39,7 +40,11 @@ public class BanScheduler {
                 }
 
                 StorageMethod storageMethod = storage.getStorageMethod();
-                storageMethod.getPlayerId(String.valueOf(bannedPlayerUuid)).thenAccept(playerId -> {
+                UUID finalBannedPlayerUuid = bannedPlayerUuid;
+                CompletableFuture.supplyAsync(() -> {
+                    Integer playerId = storageMethod.getPlayerId(String.valueOf(finalBannedPlayerUuid));
+                    return playerId;
+                }).thenAccept(playerId -> {
                     int idServer        = serverId;
                     String operator     = ChatColor.stripColor(banEntry.getSource());
 
@@ -56,10 +61,19 @@ public class BanScheduler {
                         }
                     }
 
-                    storageMethod.getPlayerId(String.valueOf(operatorUUID)).thenAccept(operatorId -> {
-                        storageMethod.doesBanExist(banEntry, idServer, playerId, operatorId).thenAccept(doesBanExist -> {
+                    UUID finalOperatorUUID = operatorUUID;
+                    CompletableFuture.supplyAsync(() -> {
+                        Integer operatorId = storageMethod.getPlayerId(String.valueOf(finalOperatorUUID));
+                        return operatorId;
+                    }).thenAccept(operatorId -> {
+                        CompletableFuture.supplyAsync(() -> {
+                            Boolean doesBanExist = storageMethod.doesBanExist(banEntry, idServer, playerId, operatorId);
+                            return doesBanExist;
+                        }).thenAccept(doesBanExist -> {
                             if(!doesBanExist) {
-                                storage.getStorageMethod().insertNewBan(banEntry, idServer, playerId, operatorId);
+                                CompletableFuture.runAsync(() -> {
+                                    storage.getStorageMethod().insertNewBan(banEntry, idServer, playerId, operatorId);
+                                });
                             }
                         });
                     });

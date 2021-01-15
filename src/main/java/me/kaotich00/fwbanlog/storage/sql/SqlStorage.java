@@ -6,12 +6,9 @@ import org.bukkit.BanEntry;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class SqlStorage implements StorageMethod {
 
@@ -53,43 +50,36 @@ public class SqlStorage implements StorageMethod {
     }
 
     @Override
-    public CompletableFuture<Void> insertNewBan(BanEntry banEntry, int idServer, int idPlayer, int idOperator) {
-        CompletableFuture<Void> playerIdFuture = new CompletableFuture<>();
+    public void insertNewBan(BanEntry banEntry, int idServer, int idPlayer, int idOperator) {
         try (Connection c = getConnection()) {
             try (PreparedStatement ps = c.prepareStatement(INSERT_BAN)) {
                 ps.setInt(1, idPlayer);
                 ps.setInt(2, idServer);
                 ps.setInt(3, idOperator);
-                ps.setDate(4, new java.sql.Date(banEntry.getCreated().getTime()));
+                ps.setTimestamp(4, new Timestamp(banEntry.getCreated().getTime()));
                 ps.setBoolean(5, banEntry.getExpiration() == null ? true : false);
                 ps.setString(6, banEntry.getReason());
                 ps.setString(7, banEntry.getReason());
                 ps.setString(8, "test");
-                ps.setDate(9, new java.sql.Date(System.currentTimeMillis()));
-                ps.setDate(10, banEntry.getExpiration() == null ? null : new java.sql.Date(banEntry.getExpiration().getTime()));
+                ps.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
+                ps.setTimestamp(10, banEntry.getExpiration() == null ? null : new Timestamp(banEntry.getExpiration().getTime()));
                 ps.setBoolean(11, true);
-                ps.execute();
-
-                playerIdFuture.complete(null);
-            }
+                ps.execute();            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return playerIdFuture;
     }
 
     @Override
-    public CompletableFuture<Void> deleteBan() {
-        return null;
+    public void deleteBan() {
+
     }
 
     @Override
-    public CompletableFuture<Integer> getPlayerId(String uuid) {
-        CompletableFuture<Integer> playerIdFuture = new CompletableFuture<>();
+    public Integer getPlayerId(String uuid) {
 
         if(uuid.equals("null")) {
-            playerIdFuture.complete(-1);
+            return -1;
         }
 
         boolean doesExist = false;
@@ -100,29 +90,25 @@ public class SqlStorage implements StorageMethod {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int idPlayer = rs.getInt("id");
-                        doesExist = true;
-                        playerIdFuture.complete(idPlayer);
+                        return idPlayer;
                     }
                 }
-                return playerIdFuture;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        if(!doesExist) {
-            Player player = Bukkit.getServer().getPlayer(UUID.fromString(uuid));
-            try (Connection c = getConnection()) {
-                try (PreparedStatement ps = c.prepareStatement(INSERT_PLAYER)) {
-                    ps.setString(1, player.getUniqueId().toString());
-                    ps.setString(2, player.getName());
-                    ps.setInt(3, 100);
-                    ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
-                    ps.execute();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
+        Player player = Bukkit.getServer().getPlayer(UUID.fromString(uuid));
+        try (Connection c = getConnection()) {
+            try (PreparedStatement ps = c.prepareStatement(INSERT_PLAYER)) {
+                ps.setString(1, player.getUniqueId().toString());
+                ps.setString(2, player.getName());
+                ps.setInt(3, 100);
+                ps.setDate(4, new java.sql.Date(System.currentTimeMillis()));
+                ps.execute();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
         try (Connection c = getConnection()) {
@@ -131,7 +117,7 @@ public class SqlStorage implements StorageMethod {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         int idPlayer = rs.getInt("id");
-                        playerIdFuture.complete(idPlayer);
+                        return idPlayer;
                     }
                 }
             }
@@ -139,37 +125,32 @@ public class SqlStorage implements StorageMethod {
             e.printStackTrace();
         }
 
-        return playerIdFuture;
+        return null;
     }
 
     @Override
-    public CompletableFuture<Boolean> doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator) {
-        CompletableFuture<Boolean> doesBanExistFuture = new CompletableFuture<>();
+    public Boolean doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator) {
 
         try (Connection c = getConnection()) {
             try (PreparedStatement ps = c.prepareStatement(SELECT_BAN)) {
-                ps.setDate(1, new java.sql.Date(banEntry.getCreated().getTime()));
+                SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String formattedDate = sm.format(banEntry.getCreated());
+
+                ps.setString(1, formattedDate);
                 ps.setInt(2, idPlayer);
                 ps.setInt(3, idServer);
                 ps.setInt(4, idOperator);
                 try (ResultSet rs = ps.executeQuery()) {
-                    int count = 0;
                     while (rs.next()) {
-                        doesBanExistFuture.complete(true);
-                        count++;
-                    }
-
-                    if(count == 0) {
-                        doesBanExistFuture.complete(false);
+                        return true;
                     }
                 }
-                return doesBanExistFuture;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return doesBanExistFuture;
+        return false;
     }
 
 }
