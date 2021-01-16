@@ -69,6 +69,6 @@ public final class FwBanlog extends JavaPlugin {
 
     public void scheduleTasks() {
         SimpleTaskService simpleTaskService = SimpleTaskService.getInstance();
-        simpleTaskService.scheduleBanTask();
+        simpleTaskService.scheduleBanTasks();
     }
 }

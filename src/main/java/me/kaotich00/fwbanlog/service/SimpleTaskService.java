@@ -6,7 +6,8 @@ import org.bukkit.Bukkit;
 public class SimpleTaskService {
 
     private static SimpleTaskService taskService;
-    private int banTaskId;
+    private int banListenerTaskId;
+    private int banDetectorTaskId;
 
     private SimpleTaskService() {
         if (taskService != null){
@@ -21,12 +22,14 @@ public class SimpleTaskService {
         return taskService;
     }
 
-    public void stopBanTask() {
-        Bukkit.getScheduler().cancelTask(this.banTaskId);
+    public void stopBanTasks() {
+        Bukkit.getScheduler().cancelTask(this.banListenerTaskId);
+        Bukkit.getScheduler().cancelTask(this.banDetectorTaskId);
     }
 
-    public void scheduleBanTask() {
-        this.banTaskId = BanScheduler.scheduleBanListener();
+    public void scheduleBanTasks() {
+        this.banListenerTaskId = BanScheduler.scheduleBanListener();
+        this.banDetectorTaskId = BanScheduler.scheduleBanDetector();
     }
 
 }

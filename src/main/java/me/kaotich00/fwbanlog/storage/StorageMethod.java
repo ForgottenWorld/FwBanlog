@@ -5,6 +5,8 @@ import org.bukkit.BanEntry;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface StorageMethod {
@@ -24,5 +26,7 @@ public interface StorageMethod {
     Integer getPlayerId(String uuid);
 
     Boolean doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
+
+    List<HashMap<String,Object>> applyBansAddedFromWeb();
 
 }

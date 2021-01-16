@@ -36,4 +36,6 @@ password: 'password'
 # Default: 1
 serverId: 1
 
-sync_frequency: 1
+# The frequency in seconds at which the tasks are executed
+# Default: 10
+sync_frequency: 10
