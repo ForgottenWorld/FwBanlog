@@ -183,7 +183,10 @@ public class SqlStorage implements StorageMethod {
                         String target = rs.getString("target");
                         String reason = rs.getString("reason");
                         Timestamp expirationTime = rs.getTimestamp("expiration");
-                        Date expirationDate = new Date(expirationTime.getTime());
+                        Date expirationDate = null;
+                        if(expirationTime != null) {
+                            expirationDate = new Date(expirationTime.getTime());
+                        }
                         Timestamp startTime = rs.getTimestamp("start_date");
                         Date startDate = new Date(startTime.getTime());
                         String source = rs.getString("source");
