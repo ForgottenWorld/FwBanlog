@@ -27,6 +27,8 @@ public interface StorageMethod {
 
     Boolean doesBanExist(BanEntry banEntry, int idServer, int idPlayer, int idOperator);
 
-    List<HashMap<String,Object>> applyBansAddedFromWeb();
+    List<HashMap<String,Object>> getListOfBanToApply();
+
+    List<String> getListOfPlayersToUnban();
 
 }

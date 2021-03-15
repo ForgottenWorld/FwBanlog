@@ -3,7 +3,6 @@ package me.kaotich00.fwbanlog.storage.sql;
 import me.kaotich00.fwbanlog.FwBanlog;
 import me.kaotich00.fwbanlog.storage.StorageMethod;
 import org.bukkit.BanEntry;
-import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -30,6 +29,8 @@ public class SqlStorage implements StorageMethod {
         " JOIN player bannedPlayer ON bannedPlayer.id = ban.id_player_id" +
         " JOIN player operator ON operator.id = ban.id_operator_id" +
         " WHERE is_applied = 0 OR is_applied IS NULL";
+    private static final String SELECT_BAN_TO_UNBAN = "SELECT * FROM ban ban JOIN player bannedPlayer ON bannedPlayer.id = ban.id_player_id WHERE ban.fg_deleted = 1 AND (ban.is_unbanned IS NULL OR ban.is_unbanned = 0)";
+    private static final String UPDATE_BAN_IS_UNBANNED = "UPDATE ban SET is_unbanned = 1 WHERE id = ?";
     private static final String UPDATE_BAN = "UPDATE ban SET is_applied = 1";
 
     private ConnectionFactory connectionFactory;
@@ -174,7 +175,7 @@ public class SqlStorage implements StorageMethod {
     }
 
     @Override
-    public List<HashMap<String,Object>> applyBansAddedFromWeb() {
+    public List<HashMap<String,Object>> getListOfBanToApply() {
         List<HashMap<String, Object>> banEntries = new ArrayList<>();
         try (Connection c = getConnection()) {
             try (PreparedStatement ps = c.prepareStatement(SELECT_BAN_ENTRIES)) {
@@ -211,6 +212,39 @@ public class SqlStorage implements StorageMethod {
         }
 
         return banEntries;
+    }
+
+    @Override
+    public List<String> getListOfPlayersToUnban() {
+        List<String> playersToUnban = new ArrayList<>();
+        List<String> pardonList = new ArrayList<>();
+        try (Connection c = getConnection()) {
+            try (PreparedStatement ps = c.prepareStatement(SELECT_BAN_TO_UNBAN)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String banId = rs.getString("id");
+                        pardonList.add(banId);
+
+                        String player = rs.getString("name");
+                        playersToUnban.add(player);
+                    }
+                }
+            }
+
+            for(String pardonId: pardonList) {
+                try (PreparedStatement ps = c.prepareStatement(UPDATE_BAN_IS_UNBANNED)) {
+                    ps.setString(1, pardonId);
+                    ps.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return playersToUnban;
     }
 
 }
